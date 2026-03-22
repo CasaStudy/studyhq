@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#185FA5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Study HQ">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Study HQ</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">Study HQ</div>
+      <div class="subtitle" id="header-subtitle">Year 10 mocks</div>
+    </div>
+    <button class="btn btn-primary" onclick="doGenerate()">Generate schedule</button>
+  </header>
+
+  <!-- TABS -->
+  <nav class="tabs" id="tabs">
+    <button class="tab active" onclick="go('avail')">Availability</button>
+    <button class="tab" onclick="go('topics')">Topics</button>
+    <button class="tab" onclick="go('exams')">Exam dates</button>
+    <button class="tab" onclick="go('cal')">Calendar</button>
+    <button class="tab" onclick="go('today')">Today</button>
+    <button class="tab" onclick="go('progress')">Progress</button>
+  </nav>
+
+  <!-- ===== AVAILABILITY ===== -->
+  <section class="panel active" id="panel-avail">
+
+    <div class="card">
+      <p class="card-title">School hours</p>
+      <div class="g4">
+        <div><label>School start</label><input type="time" id="sc-start" value="08:00"></div>
+        <div><label>School end</label><input type="time" id="sc-end" value="15:30"></div>
+        <div><label>Revision starts after school</label><input type="time" id="rev-start" value="16:30"></div>
+        <div><label>Revision ends</label><input type="time" id="rev-end" value="20:30"></div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <label style="margin-bottom:6px;">School days</label>
+        <div id="sc-days"></div>
+      </div>
+      <div class="g2">
+        <div><label>Weekend revision start</label><input type="time" id="wk-start" value="10:00"></div>
+        <div><label>Weekend revision end</label><input type="time" id="wk-end" value="17:00"></div>
+      </div>
+      <button class="btn btn-green" onclick="saveSchool()">Save school hours</button>
+      <span id="sc-saved" class="save-confirm">Saved</span>
+    </div>
+
+    <div class="card">
+      <p class="card-title">School holidays</p>
+      <p class="hint">Add each holiday period and choose whether you're away (no study) or at home (full study days available).</p>
+      <div class="holiday-types g2" style="margin-bottom:14px;">
+        <div class="type-card">
+          <div class="type-dot away-dot"></div>
+          <div>
+            <div class="type-label">Away — can't study</div>
+            <div class="hint">Trips, visits, holidays abroad. Fully blocked.</div>
+          </div>
+        </div>
+        <div class="type-card">
+          <div class="type-dot home-dot"></div>
+          <div>
+            <div class="type-label">Home — full study days</div>
+            <div class="hint">At home for the holiday. More time to get ahead.</div>
+          </div>
+        </div>
+      </div>
+      <div class="g5">
+        <div><label>Name</label><input type="text" id="hol-name" placeholder="e.g. Easter break"></div>
+        <div><label>From</label><input type="date" id="hol-from"></div>
+        <div><label>To</label><input type="date" id="hol-to"></div>
+        <div><label>Type</label>
+          <select id="hol-type">
+            <option value="away">Away — can't study</option>
+            <option value="home">Home — full study days</option>
+          </select>
+        </div>
+        <div class="btn-bottom"><button class="btn btn-primary full" onclick="addHoliday()">Add holiday</button></div>
+      </div>
+      <div class="section-label">Away holidays (blocked)</div>
+      <div id="away-list"></div>
+      <div class="section-label" style="margin-top:12px;">Home holidays (full study days)</div>
+      <div id="home-list"></div>
+    </div>
+
+    <div class="card">
+      <p class="card-title">Recurring weekly patterns</p>
+      <p class="hint">Clubs, sports, lessons — set once, repeats every week. You can skip individual dates (e.g. no basketball during half term).</p>
+      <div class="g4">
+        <div><label>Activity</label><input type="text" id="pat-name" placeholder="e.g. Basketball"></div>
+        <div><label>Day</label>
+          <select id="pat-day">
+            <option value="1">Monday</option><option value="2">Tuesday</option>
+            <option value="3">Wednesday</option><option value="4">Thursday</option>
+            <option value="5">Friday</option><option value="6">Saturday</option>
+            <option value="0">Sunday</option>
+          </select>
+        </div>
+        <div><label>From</label><input type="time" id="pat-from" value="17:00"></div>
+        <div><label>To</label><input type="time" id="pat-to" value="19:00"></div>
+      </div>
+      <button class="btn" onclick="addPat()">Add pattern</button>
+      <div id="pat-list" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="card">
+      <p class="card-title">One-off events</p>
+      <div class="g4">
+        <div><label>Label</label><input type="text" id="ev-name" placeholder="e.g. Birthday dinner"></div>
+        <div><label>Date</label><input type="date" id="ev-date"></div>
+        <div><label>From</label><input type="time" id="ev-from" value="18:00"></div>
+        <div><label>To</label><input type="time" id="ev-to" value="21:00"></div>
+      </div>
+      <button class="btn" onclick="addEvent()">Add event</button>
+      <div id="ev-list" style="margin-top:8px;"></div>
+    </div>
+
+  </section>
+
+  <!-- ===== TOPICS ===== -->
+  <section class="panel" id="panel-topics">
+    <div class="card info-card">
+      <p class="hint">Click a subject to expand it. Tick or untick topics to include or exclude them from this revision cycle. Tap the RAG badge to cycle confidence: R (not started) → A (partial) → G (confident).</p>
+    </div>
+    <div id="topic-area"></div>
+  </section>
+
+  <!-- ===== EXAMS ===== -->
+  <section class="panel" id="panel-exams">
+    <div class="card">
+      <p class="card-title">Mock exam dates</p>
+      <p class="hint">Set your Year 10 mock dates here. Update these each revision cycle — all RAG ratings and topic selections are preserved.</p>
+      <div id="exam-inputs"></div>
+    </div>
+  </section>
+
+  <!-- ===== CALENDAR ===== -->
+  <section class="panel" id="panel-cal">
+    <div id="nudge-area"></div>
+    <div id="summary-area"></div>
+
+    <div class="card">
+      <p class="card-title">Something just came up?</p>
+      <p class="hint">Add it here and the schedule updates itself automatically.</p>
+      <div class="g4">
+        <div><label>What is it?</label><input type="text" id="quick-name" placeholder="e.g. Dentist"></div>
+        <div><label>Date</label><input type="date" id="quick-date"></div>
+        <div><label>From</label><input type="time" id="quick-from" value="15:00"></div>
+        <div><label>To</label><input type="time" id="quick-to" value="17:00"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-amber" onclick="addQuickBlock(false)">Block time only</button>
+        <button class="btn btn-del" onclick="addQuickBlock(true)">Block whole day</button>
+        <span class="hint" style="align-self:center;">Schedule regenerates automatically</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="month-nav">
+        <button class="btn btn-sm" onclick="prevMo()">&#8592;</button>
+        <div class="month-title" id="mo-title"></div>
+        <button class="btn btn-sm" onclick="nextMo()">&#8594;</button>
+      </div>
+      <div class="legend">
+        <div class="leg-i"><div class="leg-d" style="background:#85B7EB;"></div>Study</div>
+        <div class="leg-i"><div class="leg-d" style="background:#97C459;"></div>Review</div>
+        <div class="leg-i"><div class="leg-d" style="background:#EF9F27;"></div>Urgent</div>
+        <div class="leg-i"><div class="leg-d" style="background:#F09595;"></div>Exam</div>
+        <div class="leg-i"><div class="leg-d" style="background:#D3D1C7;"></div>Away</div>
+        <div class="leg-i"><div class="leg-d" style="background:#5DCAA5;"></div>Home holiday</div>
+      </div>
+      <div class="cal-wrap" id="cal-hd"></div>
+      <div class="cal-wrap cal-body" id="cal-bd"></div>
+    </div>
+
+    <div class="card" id="day-card" style="display:none;">
+      <div class="day-card-header">
+        <p class="card-title" style="margin:0;" id="day-title"></p>
+        <button class="btn btn-sm btn-del" id="day-block-btn" onclick="toggleDayBlock()"></button>
+      </div>
+      <div id="day-body"></div>
+    </div>
+  </section>
+
+  <!-- ===== TODAY ===== -->
+  <section class="panel" id="panel-today">
+    <div id="today-nudge"></div>
+    <div class="stat-grid">
+      <div class="stat"><div class="sv" id="st-study">0</div><div class="sl">To study</div></div>
+      <div class="stat"><div class="sv" id="st-review">0</div><div class="sl">Reviews</div></div>
+      <div class="stat"><div class="sv" id="st-green">0</div><div class="sl">Mastered</div></div>
+      <div class="stat"><div class="sv" id="st-total">0</div><div class="sl">Active topics</div></div>
+    </div>
+    <div class="card">
+      <p class="card-title" id="today-hd">Today</p>
+      <div id="today-list"></div>
+    </div>
+  </section>
+
+  <!-- ===== PROGRESS ===== -->
+  <section class="panel" id="panel-progress">
+    <div class="card">
+      <p class="card-title">Subject progress</p>
+      <div id="prog-list"></div>
+    </div>
+  </section>
+
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/state.js"></script>
+<script src="js/scheduler.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
